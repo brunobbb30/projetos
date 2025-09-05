@@ -2,17 +2,17 @@
 #   Geral
 #       Limite de 10 transações por dia
 #       Mensagem caso já tiver chegado ao limite de transações
-#       OK Inserir as operações de depósito, saque e extrato em funções
-#           OK Depósito: Função recebe argumentos apenas por posição
-#           OK Saque: Função recebe argumentos apenas por nome
-#           OK Extrato: Função recebe argumentos por posição (saldo) e por nome (extrato)
+#       (+) Inserir as operações de depósito, saque e extrato em funções
+#           (+) Depósito: Função recebe argumentos apenas por posição
+#           (+) Saque: Função recebe argumentos apenas por nome
+#           (+) Extrato: Função recebe argumentos por posição (saldo) e por nome (extrato)
 #       (+)Inserir funções de cadastro de usuários e cadastro de conta bancária (vincular com usuário)
 #           (+)Usuário:
 #               (+)armazenar em lista
 #               (+)composto por: nome, data de nascimento, cpf, endereço
 #                    (+)o endereço é uma string com o formato: logradouro, número - bairro - cidade/siglaEstado
 #                    (+)cpf é somente números
-#               (+)não se pode cadastras 2 usuários com o mesmo cpf
+#               (+)relação biunívoca entre cpf e usuário
 #           (+)Conta:
 #               (+)armazenar em lista
 #               (+)composto por: agência, número da conta, usuário
@@ -33,6 +33,9 @@
 
 from datetime import datetime, date
 
+LIMITE_OPERACOES = 2
+LIMITE_VALOR = 500.0
+
 saldo = 0.0
 qtd_de_saques = 0
 deposito_acumulado = 0.0
@@ -40,8 +43,13 @@ saque_acumulado = 0.0
 contador = 0
 dia_da_ultima_operacao = date.today()
 extrato = "     EXTRATO     ".center(30,"-") + "\n"
-LIMITE_OPERACOES = 2
-LIMITE_VALOR = 500.0
+#base_de_usuarios = {}
+base_de_usuarios = {'14792091713': {'nome': 'Bruno Buzon Braga', 'data_nascimento': '18/06/1996', 'endereco': 'Rua José Penna Medina, 501 - Praia da Costa - Vila Velha/ES'}}
+numero_da_conta = 0
+agencia = 1
+base_de_conta = {5: {'agencia': 1, 'cpf': '14792091713'}}
+#base_de_conta = {}
+
 menu = (f"""\n{" MENU ".center(30,"=")}
       
     Tecle [d] para depositar
@@ -186,6 +194,74 @@ def exibir_extrato(saldo, deposito_acumulado, *, saque_acumulado, extrato):
         print(f"Total de depósitos: R$ {deposito_acumulado:.2f}\nTotal de saques: R$ {saque_acumulado:.2f}\nSaldo: R$ {saldo:.2f}")
         pausa = input("-".center(30,"-") + "\n\n""Tecle [m] para Menu\n")
 
+def cadastrar_usuário():
+
+    cpf = input("\nInforme seu cpf: ")
+
+    if cpf in base_de_usuarios.keys():
+
+        return cpf, base_de_usuarios
+
+    else:
+
+        nome = input("\nInforme seu nome: ")
+        data_nascimento = input("\nInforme sua data de nascimento: ")
+
+        logradouro = input("\nInforme seu logradouro: ")
+        numero_da_residência = input("\nInforme o número da residência: ")
+        bairro = input("\nInforme o bairro: ")
+        cidade = input("\nInforme a cidade: ")
+        estado = input("\nInforme o estado: ")
+    
+        endereco = f"{logradouro}, {numero_da_residência} - {bairro} - {cidade}/{estado}"
+
+    
+        base_de_usuarios[cpf] = dict(nome = nome, data_nascimento = data_nascimento, endereco = endereco)
+
+        return cpf
+    
+def cadastrar_conta_bancaria(retorno, numero_da_conta):
+
+    if isinstance(retorno, tuple):
+
+            
+        cpf, base_de_usuarios = retorno
+
+        nome_do_usuario_ja_cadastrado = base_de_usuarios[cpf]["nome"]
+
+        nova_conta = input(f"Olá Sr. {nome_do_usuario_ja_cadastrado}.\nTecle [n] para abrir nova conta\nTecle [c] para continuar\n")
+
+        while nova_conta != "n" and nova_conta != "c":
+
+            nova_conta = input("Opção inválida\n\nTecle [n] para abrir nova conta\nTecle [c] para continuar\n")
+
+        if nova_conta == "n":
+
+            numero_da_conta += 1
+            
+            base_de_conta[numero_da_conta] = dict(agencia = agencia, cpf = cpf)
+
+            print("**Nova conta criada com sucesso!**")
+
+        else:
+
+            return
+            
+    else:
+        
+        numero_da_conta += 1
+        
+        base_de_conta[numero_da_conta] = dict(agencia = agencia, cpf = retorno)
+
+        print("**Conta criada com sucesso!**")
+
+
+
+
+retorno = cadastrar_usuário()
+
+cadastrar_conta_bancaria(retorno, numero_da_conta)
+
 while True:
     
     opcao = input(menu)
@@ -194,8 +270,6 @@ while True:
     if opcao == "d":
 
         primeiro, *resto = deposito(contador, dia_da_ultima_operacao, saldo, deposito_acumulado, extrato, LIMITE_OPERACOES)
-        print(primeiro)
-        print(resto)
 
         if primeiro == "menu":
 
