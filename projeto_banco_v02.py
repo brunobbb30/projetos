@@ -22,6 +22,7 @@
 #   Depositar
 #       Somente valores positivos
 #   Sacar
+#       (-)Limite de 3 saques por dia
 #       Somente valores positivos
 #       Limite de 500 reais por saque
 #       Mensagem caso a conta não tenha saldo
@@ -43,12 +44,10 @@ saque_acumulado = 0.0
 contador = 0
 dia_da_ultima_operacao = date.today()
 extrato = "     EXTRATO     ".center(30,"-") + "\n"
-#base_de_usuarios = {}
-base_de_usuarios = {'14792091713': {'nome': 'Bruno Buzon Braga', 'data_nascimento': '18/06/1996', 'endereco': 'Rua José Penna Medina, 501 - Praia da Costa - Vila Velha/ES'}}
+base_de_usuarios = {}
+base_de_conta = {}
 numero_da_conta = 0
 agencia = 1
-base_de_conta = {5: {'agencia': 1, 'cpf': '14792091713'}}
-#base_de_conta = {}
 
 menu = (f"""\n{" MENU ".center(30,"=")}
       
@@ -62,7 +61,7 @@ menu = (f"""\n{" MENU ".center(30,"=")}
         
 """)
 
-def deposito (contador, dia_da_ultima_operacao, saldo, deposito_acumulado, extrato, LIMITE_OPERACOES):
+def deposito (contador, dia_da_ultima_operacao, saldo, deposito_acumulado, extrato, LIMITE_OPERACOES, /):
 
     #Verifica limite de operações
     dia_da_verificacao = date.today()
@@ -184,7 +183,7 @@ def saque (*, contador, dia_da_ultima_operacao, saldo, saque_acumulado, extrato,
         print("\nXX Operação abortada XX")
         return ("menu",)
 
-def exibir_extrato(saldo, deposito_acumulado, *, saque_acumulado, extrato):
+def exibir_extrato(saldo, deposito_acumulado, /, *, saque_acumulado, extrato):
 
     #Variável apenas para fins de pausa de fluxo
     pausa = "a"
